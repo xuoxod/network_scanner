@@ -19,24 +19,7 @@ Key modules
    default).
 1. `netcheck` — non-privileged connectivity checks and startup heuristics.
 
-<p align="center">
-  <img src="https://github.com/xuoxod/network_scanner/actions/workflows/discovery.yml/badge.svg" alt="CI" />
-  <img src="https://docs.rs/netutils/badge.svg" alt="docs.rs" />
-  <img src="https://img.shields.io/crates/v/netutils.svg" alt="crates.io" />
-</p>
-
-# Netutils
-
-Netutils contains low-level network helpers used by other crates in the workspace. Examples use generic placeholders to avoid leaking system-specific information.
-
-![netutils architecture](docs/images/netutils-arch.svg)
-
-## Key modules
-
-1. `iface` — enumerate and normalize network interfaces.
-2. `rawsocket` / `arp` — datalink helpers (use with care; some features may require elevated privileges).
-3. `portscan` — TCP connect port scanning helpers (non-privileged by default).
-4. `netcheck` — non-privileged connectivity checks and startup heuristics.
+[![CI](https://github.com/xuoxod/network_scanner/actions/workflows/discovery.yml/badge.svg)](https://github.com/xuoxod/network_scanner/actions/workflows/discovery.yml) ![docs.rs](https://docs.rs/netutils/badge.svg) ![crates.io](https://img.shields.io/crates/v/netutils.svg)
 
 ## Quick runtime check
 

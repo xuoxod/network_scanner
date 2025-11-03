@@ -1,0 +1,24 @@
+```github-actions-workflow
+name: discovery-crate-tests
+
+on:
+  push:
+    paths:
+      - 'crates/discovery/**'
+  pull_request:
+    paths:
+      - 'crates/discovery/**'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain-action@stable
+      - name: Run discovery crate tests
+        run: |
+          cd crates/discovery
+          cargo test --manifest-path Cargo.toml --quiet
+
+```
