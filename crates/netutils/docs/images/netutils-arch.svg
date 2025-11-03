@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="120" viewBox="0 0 640 120">
+    <style>text{font-family:Arial,Helvetica,sans-serif;font-size:12px}</style>
+    <rect x="8" y="8" width="200" height="100" rx="6" fill="#eef" stroke="#66a" />
+    <rect x="220" y="8" width="200" height="100" rx="6" fill="#efe" stroke="#6a6" />
+    <rect x="432" y="8" width="200" height="100" rx="6" fill="#fee" stroke="#a66" />
+    <text x="34" y="34">iface</text>
+    <text x="34" y="54">(interfaces, addresses)</text>
+    <text x="252" y="34">rawsocket / arp</text>
+    <text x="252" y="54">(datalink helpers)</text>
+    <text x="462" y="34">portscan</text>
+    <text x="462" y="54">(tcp-connect helpers)</text>
+    <line x1="208" y1="58" x2="220" y2="58" stroke="#666" stroke-width="2" marker-end="url(#arrow)" />
+    <line x1="420" y1="58" x2="432" y2="58" stroke="#666" stroke-width="2" marker-end="url(#arrow)" />
+    <defs>
+        <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="5"
+            orient="auto-start-reverse">
+            <path d="M 0 0 L 10 5 L 0 10 z" fill="#666" />
+        </marker>
+    </defs>
+</svg>

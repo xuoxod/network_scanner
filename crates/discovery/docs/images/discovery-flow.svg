@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="240" viewBox="0 0 800 240">
+    <style> .t{font:14px sans-serif; fill:#111} .b{fill:#0b74de; stroke:#084e9c; stroke-width:1}
+        .g{fill:#e6f0fb} </style>
+    <rect x="8" y="8" rx="8" ry="8" width="784" height="224" fill="#fff" stroke="#ddd" />
+    <rect x="24" y="24" width="160" height="64" rx="8" class="g" />
+    <text x="44" y="54" class="t">Input: CIDR / Source</text>
+
+    <rect x="240" y="24" width="160" height="64" rx="8" class="g" />
+    <text x="266" y="44" class="t">Passive ARP Discovery</text>
+    <text x="266" y="64" class="t">(listen / cache read)</text>
+
+    <rect x="456" y="24" width="160" height="64" rx="8" class="g" />
+    <text x="480" y="44" class="t">Optional Active ARP</text>
+    <text x="480" y="64" class="t">(arping fallback/read cache)</text>
+
+    <rect x="24" y="120" width="592" height="72" rx="8" class="g" />
+    <text x="40" y="150" class="t">Optional Port Scanning (--portscan)</text>
+    <text x="40" y="170" class="t">- builtin thorough: 1..=1024 (default for thorough mode)</text>
+    <text x="40" y="190" class="t">- fast preset: top ~100 ports (--fast)</text>
+
+    <text x="672" y="60" class="t">→</text>
+    <text x="672" y="170" class="t">→</text>
+    <rect x="672" y="96" width="104" height="64" rx="8" class="b" />
+    <text x="690" y="132" fill="#fff" font="14px sans-serif">Discovery CSV/JSON</text>
+</svg>

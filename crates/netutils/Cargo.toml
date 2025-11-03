@@ -1,0 +1,16 @@
+[package]
+name = "netutils"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+pnet_datalink = "0.33"
+ipnetwork = "0.20"
+tokio = { version = "1", features = [
+    "rt-multi-thread",
+    "macros",
+    "net",
+    "time",
+    "io-util",
+    "sync",
+] }

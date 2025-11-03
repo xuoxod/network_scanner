@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="700" height="200" viewBox="0 0 700 200">
+    <style> .t{font:13px sans-serif; fill:#111} .box{fill:#f6fbff;stroke:#c8e1ff;stroke-width:1}
+        .pill{fill:#0b74de;stroke:#084e9c;stroke-width:1} </style>
+    <rect x="8" y="8" rx="6" ry="6" width="684" height="184" fill="#fff" stroke="#eee" />
+    <rect x="36" y="30" width="220" height="56" rx="6" class="box" />
+    <text x="56" y="60" class="t">Port list selection</text>
+    <text x="56" y="78" class="t">- builtin thorough: 1..=1024</text>
+    <rect x="280" y="30" width="220" height="56" rx="6" class="box" />
+    <text x="300" y="60" class="t">Concurrency &amp; timeouts</text>
+    <text x="300" y="78" class="t">- per-host concurrency</text>
+    <rect x="36" y="110" width="220" height="56" rx="6" class="box" />
+    <text x="56" y="140" class="t">Scan method</text>
+    <text x="56" y="158" class="t">- TCP connect (safe, non-privileged)</text>
+    <rect x="280" y="110" width="220" height="56" rx="6" class="box" />
+    <text x="300" y="140" class="t">Result normalization</text>
+    <text x="300" y="158" class="t">- detect banners, service names</text>
+    <g transform="translate(540,70)">
+        <rect x="0" y="24" width="124" height="64" rx="8" class="pill" />
+        <text x="14" y="62" fill="#fff" font="13px sans-serif">Open ports</text>
+    </g>
+    <line x1="256" y1="58" x2="280" y2="58" stroke="#888" />
+    <line x1="256" y1="140" x2="280" y2="140" stroke="#888" />
+</svg>

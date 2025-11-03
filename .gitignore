@@ -1,0 +1,102 @@
+# Ignore build artifacts and editor temporary files for the network_scanner workspace
+
+# =====================
+# Rust / Cargo
+# =====================
+# Ignore compiled artifacts
+/target/
+
+# Do NOT commit Cargo.lock (keep Cargo.toml tracked as requested)
+Cargo.lock
+
+# If you vendor dependencies or add lockfiles for apps, consider adding exceptions per-crate.
+
+# =====================
+# Editors / IDEs
+# =====================
+.idea/
+*.iml
+.vscode/
+
+# =====================
+# OS files
+# =====================
+.DS_Store
+Thumbs.db
+
+# =====================
+# Logs and temp files
+# =====================
+*.log
+*.swp
+
+# =====================
+# Java / build artifacts (carried from legacy netscan .gitignore)
+# =====================
+*.class
+.ctxt
+.mtj.tmp/
+*.jar
+*.war
+*.nar
+*.ear
+*.zip
+*.tar.gz
+*.rar
+hs_err_pid*
+
+# Eclipse
+.project
+.classpath
+.c9repl_history
+.settings/
+bin/
+tmp/
+
+# NetBeans
+nbproject/private/
+build/
+nbbuild/
+dist/
+nbdist/
+.nb-gradle/
+
+# IntelliJ IDEA
+out/
+
+# Gradle
+.gradle/
+
+# Maven
+target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+
+# VS Code
+.vscode/
+
+# =====================
+# Project artifacts & outputs
+# =====================
+# Ignore CSV/JSON outputs by default (safe for scanning output) but keep exceptions
+*.csv
+*.json
+
+# Ensure authoritative OUI CSV is tracked (do not ignore)
+!crates/io/data/oui.csv
+
+# Environment files
+.env
+.env.*
+
+# =====================
+# Project-specific exceptions
+# =====================
+# Keep the authoritative OUI dataset tracked in this project
+!crates/io/data/oui.csv
+
+# If you want to keep example data or specific outputs, add explicit exceptions
+# e.g. !crates/discovery/examples/*.csv
