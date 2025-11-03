@@ -1,0 +1,12 @@
+# formats 📦
+
+![docs.rs](https://docs.rs/formats/badge.svg) ![crates.io](https://img.shields.io/crates/v/formats.svg)
+
+Shared data contract: `DiscoveryRecord` and serialization helpers. This crate defines the canonical record used across the workspace and helpers for CSV/JSON roundtrips.
+
+### Build
+
+```bash
+# build formats library in release
+cargo build --manifest-path crates/formats/Cargo.toml --lib --release
+```

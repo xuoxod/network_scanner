@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64">
+    <rect rx="10" ry="10" width="64" height="64" fill="#0b1226" />
+    <g fill="#9be3ff" font-family="Segoe UI, Roboto, Helvetica, Arial" font-size="14">
+        <text x="10" y="36">rm</text>
+    </g>
+</svg>

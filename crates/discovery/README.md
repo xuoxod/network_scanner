@@ -1,7 +1,11 @@
 
-# discovery
+# 🔎 discovery
+
+![discovery diagram](docs/images/discovery-flow.svg)
 
 Discovery crate — ARP-based discovery and opt-in probing
+
+![CI](https://github.com/xuoxod/network_scanner/actions/workflows/discovery.yml/badge.svg) ![docs.rs](https://docs.rs/discovery/badge.svg) ![crates.io](https://img.shields.io/crates/v/discovery.svg)
 
 This crate exposes a library API and a small CLI for running local network
 discovery. Examples use generic placeholders (do not paste system-specific
@@ -23,20 +27,48 @@ information.
 
 ## Quick examples
 
-1. Build the CLI in release mode:
+# 🔎 discovery
+
+![discovery diagram](docs/images/discovery-flow.svg)
+
+Discovery crate — ARP-based discovery and opt-in probing
+
+![CI](https://github.com/xuoxod/network_scanner/actions/workflows/discovery.yml/badge.svg)
+
+This crate exposes a library API and a small CLI for running local network
+discovery. Examples use generic placeholders (do not paste system-specific
+values).
+
+## Details
+
+A focused crate that provides ARP-based host discovery and optional, opt-in
+TCP port probing. The crate exposes a library API and a small CLI. All
+examples here use generic placeholders to avoid leaking system-specific
+information.
+
+### Key behaviors
+
+1. Passive ARP discovery is the default (no active probes).
+2. Enable active ARP probes with `--probe` (permission required).
+3. Enable TCP port scanning with `--portscan` (off by default; builtin
+   ports cover 1..=1024). Use `--fast` for a smaller preset (~100 ports).
+
+## Quick examples
+
+Build the CLI in release mode:
 
 ```bash
 cd /path/to/network_scanner
 cargo build -p discovery --bin discovery-cli --release
 ```
 
-1. Passive discovery (no active probes):
+Passive discovery (no active probes):
 
 ```bash
 cargo run -p discovery --bin discovery-cli -- 10.0.0.0/24 --out results.csv
 ```
 
-1. Opt-in active scan (only on networks you control):
+Opt-in active scan (only on networks you control):
 
 ```bash
 # may require elevated privileges for ARP probes
@@ -85,3 +117,17 @@ If those flags are omitted, the CLI emits `<basename>.target.json` and
 - `crates/discovery/docs/images/portscan-strategy.svg`
 
 Refer to the crate source for full API docs and examples.
+
+### Build (quick)
+
+From repository root, build the discovery binary in release mode:
+
+```bash
+cargo build --manifest-path crates/discovery/Cargo.toml --bin discovery-cli --release
+```
+
+To build as a library (release):
+
+```bash
+cargo build --manifest-path crates/discovery/Cargo.toml --lib --release
+```

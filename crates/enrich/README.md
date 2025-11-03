@@ -1,0 +1,12 @@
+# enrich 🔍
+
+![docs.rs](https://docs.rs/enrich/badge.svg) ![crates.io](https://img.shields.io/crates/v/enrich.svg)
+
+Optional enrichments (vendor heuristics) used to populate missing vendor/hostname fields when available.
+
+### Build
+
+```bash
+# build enrich library in release
+cargo build --manifest-path crates/enrich/Cargo.toml --lib --release
+```

@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="120" height="40" viewBox="0 0 120 40">
+    <rect rx="6" ry="6" width="120" height="40" fill="#0b1226" />
+    <g fill="#9be3ff" font-family="Segoe UI, Roboto, Helvetica, Arial" font-size="14">
+        <text x="12" y="24">rmediatech</text>
+    </g>
+    <g transform="translate(86,6)">
+        <circle cx="12" cy="12" r="10" fill="#ffcc66" />
+        <path d="M8 12 L12 16 L18 10" stroke="#0b1226" stroke-width="2" fill="none"
+            stroke-linecap="round" stroke-linejoin="round" />
+    </g>
+</svg>
