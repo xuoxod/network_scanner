@@ -1,4 +1,3 @@
----
 # Network Scanner 🔎
 
 [![release](https://img.shields.io/github/v/release/xuoxod/network_scanner)](https://github.com/xuoxod/network_scanner/releases) [![CI](https://github.com/xuoxod/network_scanner/actions/workflows/discovery.yml/badge.svg)](https://github.com/xuoxod/network_scanner/actions) [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE) [![Rust](https://img.shields.io/badge/rust-1.70+-orange.svg)](https://www.rust-lang.org)
@@ -94,5 +93,3 @@ The project includes a canonical OUI CSV used by the IO crate at `crates/io/data
 ## License
 
 See the `LICENSE` file at the repository root.
-
----
