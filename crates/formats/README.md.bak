@@ -1,6 +1,7 @@
 # Formats
 
-[![docs.rs](https://docs.rs/formats/badge.svg)](https://docs.rs/formats) [![crates.io](https://img.shields.io/crates/v/formats.svg)](https://crates.io/crates/formats)
+![docs.rs](https://docs.rs/formats/badge.svg)
+![crates.io](https://img.shields.io/crates/v/formats.svg)
 
 Shared data contract: `DiscoveryRecord` and serialization helpers.
 
