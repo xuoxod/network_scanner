@@ -10,12 +10,13 @@ fn normalize_json(s: &str) -> Value {
 
 #[test]
 fn csv_against_golden() {
-    let sample = "/home/emhcet/Downloads/d-nodes/discovered_hosts.csv";
-    if !Path::new(sample).exists() {
+    let sample = std::env::var("DISCOVERY_TEST_SAMPLE_CSV")
+        .unwrap_or_else(|_| "tests/golden/discovered_hosts.csv".to_string());
+    if !Path::new(&sample).exists() {
         eprintln!("skipping csv golden test (sample missing)");
         return;
     }
-    let mapped = read_netscan_csv(sample).expect("read csv");
+    let mapped = read_netscan_csv(&sample).expect("read csv");
     let produced = serde_json::to_string_pretty(&mapped).expect("serialize produced");
 
     let golden_path = "tests/golden/discovered_hosts.csv.golden.json";
@@ -29,12 +30,13 @@ fn csv_against_golden() {
 
 #[test]
 fn json_against_golden() {
-    let sample = "/home/emhcet/Downloads/d-nodes/discovered_hosts.json";
-    if !Path::new(sample).exists() {
+    let sample = std::env::var("DISCOVERY_TEST_SAMPLE_JSON")
+        .unwrap_or_else(|_| "tests/golden/discovered_hosts.json".to_string());
+    if !Path::new(&sample).exists() {
         eprintln!("skipping json golden test (sample missing)");
         return;
     }
-    let mapped = read_netscan_json(sample).expect("read json");
+    let mapped = read_netscan_json(&sample).expect("read json");
     let produced = serde_json::to_string_pretty(&mapped).expect("serialize produced");
 
     let golden_path = "tests/golden/discovered_hosts.json.golden.json";

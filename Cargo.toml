@@ -1,0 +1,10 @@
+[workspace]
+resolver = "2"
+members = [
+    "crates/discovery",
+    "crates/enrich",
+    "crates/formats",
+    "crates/io",
+    "crates/netutils",
+]
+default-members = ["crates/discovery", "crates/netutils"]

@@ -1,103 +1,86 @@
-# Discovery
+# discovery 🔍
 
-![CI](https://github.com/xuoxod/network_scanner/actions/workflows/discovery.yml/badge.svg)
-![docs.rs](https://docs.rs/discovery/badge.svg)
-![crates.io](https://img.shields.io/crates/v/discovery.svg)
+[![CI](https://github.com/xuoxod/network_scanner/actions/workflows/discovery.yml/badge.svg)](https://github.com/xuoxod/network_scanner/actions)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](../../LICENSE)
 
-![discovery diagram](docs/images/discovery-flow.svg)
+Core discovery engine and CLI for local network observation, ARP inspection, and TCP port scanning.
 
-Discovery crate — ARP-based discovery and opt-in probing. This crate exposes a library API and a small CLI for running local network discovery. Examples use generic placeholders (do not paste system-specific values).
+![Discovery Flow](docs/images/discovery-flow.svg)
 
-## Key behaviors
+---
 
-1. Passive ARP discovery is the default (no active probes).
-2. Enable active ARP probes with `--probe` (permission required).
-3. Enable TCP port scanning with `--portscan` (off by default; builtin ports cover 1..=1024). Use `--fast` for a smaller preset (~100 ports).
+## Key Behaviors
 
-## Quick examples
+1. **Passive ARP discovery by default**: Interrogates the system ARP tables without transmitting active probes.
+2. **Opt-in active ARP probing (`--probe`)**: Transmits unicast ARP requests to detect live hosts absent from local cache.
+3. **Opt-in TCP port scanning (`--portscan`)**: Connect-scans discovered hosts. Built-in port range defaults to `1..=1024`, with `--fast` offering a ~100 port preset, or `--ports` accepting custom lists and ranges.
+4. **Automatic Primary CIDR Discovery**: If no CIDR is specified, the CLI interrogates the system interface table to determine the primary subnet automatically.
+5. **Hardware OUI Resolution**: Discovered MAC addresses are automatically enriched with hardware manufacturer names from the embedded IEEE OUI database.
 
-Build the CLI in release mode:
+---
+
+## Command-Line Usage
 
 ```bash
-cd /path/to/network_scanner
-cargo build -p discovery --bin discovery-cli --release
+# Auto-detect local subnet and discover passively
+cargo run --bin discovery-cli
+
+# Target specific subnet and write CSV + companion JSON files
+cargo run --bin discovery-cli -- 192.168.1.0/24 --out results.csv --json
+
+# Fast port scan against discovered hosts
+cargo run --bin discovery-cli -- 192.168.1.0/24 --portscan --fast
+
+# Explicit port list and custom timeouts
+cargo run --bin discovery-cli -- 192.168.1.0/24 --portscan --ports 22,80,443,8000-8080 --timeout 2
+
+# Active ARP probing (requires elevated privileges)
+sudo -E cargo run --bin discovery-cli -- 192.168.1.0/24 --probe --portscan
 ```
 
-Passive discovery (no active probes):
+---
 
-```bash
-cargo run -p discovery --bin discovery-cli -- 10.0.0.0/24 --out results.csv
+## Output Formats & Companion Files
+
+When `--json` is specified, the CLI produces:
+
+- `<basename>.json` — Standard array of canonical `DiscoveryRecord` objects.
+- `<basename>.target.json` — Streamlined JSON structure for modern downstream ingestion.
+- `<basename>.legacy.json` — Drop-in backwards-compatible JSON preserving legacy netscan field names (`IP`, `MAC`, `Vendor`, `Method`, `is_up`).
+
+Custom target or legacy paths can be explicitly specified:
+- `--out-target <FILE>`: Direct path for target JSON.
+- `--out-legacy <FILE>`: Direct path for legacy JSON.
+
+---
+
+## Library API Example
+
+```rust
+use discovery::{Discover, LiveArpDiscover};
+
+let discoverer = LiveArpDiscover::new("192.168.1.0/24")
+    .with_workers(32)
+    .with_probe(false)
+    .with_timeout_secs(1);
+
+let records = discoverer.discover();
+for record in records {
+    println!("Host: {} | MAC: {:?} | Vendor: {:?}", record.ip, record.mac, record.vendor);
+}
 ```
 
-Opt-in active scan (only on networks you control):
+---
+
+## Testing
 
 ```bash
-# may require elevated privileges for ARP probes
-sudo -E cargo run -p discovery --bin discovery-cli -- 10.0.0.0/24 --probe --portscan --out active.csv
-```
-
-## Tests
-
-```bash
+# Unit tests
 cargo test -p discovery
-```
 
-Integration test (loopback portscan):
+# Integration test (loopback listener & port scan)
+cargo test -p discovery --test portscan_integration
 
-```bash
-cargo test --manifest-path crates/discovery/Cargo.toml --test portscan_integration
-```
-
-## Output formats
-
-- CSV (default)
-- JSON (enable with `--json`)
-
-When JSON output is requested the CLI produces companion files:
-
-- `<basename>.target.json` — neutral, target-compatible JSON (see `crates/io` helpers). This is pretty-printed and shaped for downstream consumers.
-- `<basename>.legacy.json` — legacy-shaped JSON compatible with historical netscan outputs (includes `ports`, `banners`, `Method`, and `is_up`).
-
-Use flags to control companion output:
-
-- `--out-target <FILE>` — write the target-compatible JSON to `<FILE>`.
-- `--out-legacy <FILE>` — write the legacy-shaped JSON to `<FILE>`.
-
-## Diagrams
-
-- `crates/discovery/docs/images/discovery-flow.svg`
-- `crates/discovery/docs/images/portscan-strategy.svg`
-
-Refer to the crate source for full API docs and examples.
-
-## Build (quick)
-
-From repository root, build the discovery binary in release mode:
-
-```bash
-cargo build --manifest-path crates/discovery/Cargo.toml --bin discovery-cli --release
-```
-
-To build as a library (release):
-
-```bash
-cargo build --manifest-path crates/discovery/Cargo.toml --lib --release
-```
-
-```bash
-cargo build -p discovery --bin discovery-cli --release
-
-```
-
-Passive discovery (no active probes):
-
-```bash
-cargo run -p discovery --bin discovery-cli -- 10.0.0.0/24 --out results.csv
-```
-
-Opt-in active scan (only on networks you control):
-
-```bash
-# may require elevated privileges for ARP probes
-sudo -E cargo run -p discovery --bin discovery-cli -- 10.0.0.0/24 --probe --portscan --out active.csv
+# CLI companion file test
+cargo test -p discovery --test cli_companion_test
 ```

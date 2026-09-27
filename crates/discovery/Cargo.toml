@@ -17,3 +17,8 @@ default = ["enrich"]
 
 [dev-dependencies]
 tempfile = "3.4"
+
+[[bin]]
+name = "discovery-cli"
+path = "src/main.rs"
+

@@ -273,3 +273,35 @@ pub fn read_netscan_csv<P: AsRef<str>>(path: P) -> Result<Vec<DiscoveryRecord>, 
 
     Ok(out)
 }
+
+/// Write canonical discovery records to a CSV formatted string.
+/// Always produces the uniform 6-column header: ip,port,banner,mac,vendor,timestamp
+pub fn to_canonical_csv(records: &[DiscoveryRecord]) -> Result<String, Box<dyn Error>> {
+    let mut wtr = csv::WriterBuilder::new().has_headers(false).from_writer(Vec::new());
+    // Write explicit header so that column count is guaranteed even if records is empty
+    wtr.write_record(&["ip", "port", "banner", "mac", "vendor", "timestamp"])?;
+    for r in records {
+        let port_str = r.port.map(|p| p.to_string()).unwrap_or_default();
+        wtr.write_record(&[
+            &r.ip,
+            &port_str,
+            r.banner.as_deref().unwrap_or(""),
+            r.mac.as_deref().unwrap_or(""),
+            r.vendor.as_deref().unwrap_or(""),
+            r.timestamp.as_deref().unwrap_or(""),
+        ])?;
+    }
+    wtr.flush()?;
+    let bytes = wtr.into_inner().map_err(|e| e.into_error())?;
+    Ok(String::from_utf8(bytes)?)
+}
+
+/// Convenience: write canonical CSV formatted records directly to a file path.
+pub fn write_canonical_csv_file<P: AsRef<std::path::Path>>(
+    path: P,
+    records: &[DiscoveryRecord],
+) -> Result<(), Box<dyn Error>> {
+    let s = to_canonical_csv(records)?;
+    std::fs::write(path.as_ref(), s)?;
+    Ok(())
+}

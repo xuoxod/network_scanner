@@ -13,7 +13,7 @@ fn usage(prog: &str) {
 }
 
 fn main() {
-    let mut args: Vec<String> = env::args().collect();
+    let args: Vec<String> = env::args().collect();
     let prog = args
         .get(0)
         .cloned()
@@ -81,7 +81,7 @@ fn main() {
         }
     }
 
-    let mut discover = LiveArpDiscover::new(cidr)
+    let discover = LiveArpDiscover::new(cidr)
         .with_workers(concurrency)
         .with_probe(perform_probe)
         .with_timeout_secs(timeout_secs);

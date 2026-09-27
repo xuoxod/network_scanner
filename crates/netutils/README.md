@@ -1,49 +1,52 @@
-# 🧰 netutils
+# netutils 🧰
 
-![netutils architecture](docs/images/netutils-arch.svg)
+[![CI](https://github.com/xuoxod/network_scanner/actions/workflows/discovery.yml/badge.svg)](https://github.com/xuoxod/network_scanner/actions)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](../../LICENSE)
 
-Netutils — low-level network helpers
+Low-level networking primitives, interface introspection, ARP resolvers, and diagnostic utilities.
 
-![CI](https://github.com/xuoxod/network_scanner/actions/workflows/discovery.yml/badge.svg) ![docs.rs](https://docs.rs/netutils/badge.svg) ![crates.io](https://img.shields.io/crates/v/netutils.svg)
+![Netutils Architecture](docs/images/netutils-arch.svg)
 
-This crate contains small, focused helpers used by other crates in the
-workspace. Examples use generic placeholders to avoid leaking system-specific
-information.
+---
 
-Key modules
+## Core Modules
 
-1. `iface` — enumerate and normalize network interfaces.
-1. `rawsocket` / `arp` — datalink helpers (use with care; some features may
-   require elevated privileges).
-1. `portscan` — TCP connect port scanning helpers (non-privileged by
-   default).
-1. `netcheck` — non-privileged connectivity checks and startup heuristics.
+1. **`iface`**: Enumerate and normalize system network interfaces, IP addresses, MAC addresses, and determine default routing interfaces and CIDR subnets.
+2. **`arp`**: Parse Linux `/proc/net/arp` and `ip neigh` cache, execute targeted unicast ARP probes via `arping`/`ping` fallback, and parse binary MAC structures.
+3. **`portscan`**: High-concurrency asynchronous/threaded TCP connect port scanner.
+4. **`cidrsniffer`**: CIDR expansion, worker chunk partitioning, and multi-threaded ARP cache/probe scanning.
+5. **`netcheck`**: Non-privileged connectivity checks and startup heuristics.
+6. **`rawsocket`**: Datalink layer packet transmission and reception helpers.
 
-[![CI](https://github.com/xuoxod/network_scanner/actions/workflows/discovery.yml/badge.svg)](https://github.com/xuoxod/network_scanner/actions/workflows/discovery.yml) ![docs.rs](https://docs.rs/netutils/badge.svg) ![crates.io](https://img.shields.io/crates/v/netutils.svg)
+---
 
-## Quick runtime check
+## Quick Diagnostic Check (`netcheck`)
+
+Run non-privileged network checks to diagnose egress and gateway reachability:
 
 ```bash
-cd /path/to/network_scanner
-cargo run --manifest-path crates/netutils/Cargo.toml --bin netcheck
+cargo run --bin netcheck
 ```
 
-## Tests
+Example output:
+```text
+=== Network Scanner — NetCheck Connectivity Diagnostic ===
+  Local Outbound IP: 192.168.1.160
+  Primary Interface: wlp2s0 (IPv4: 192.168.1.160, MAC: 04:ea:56:9d:4f:cc, State: UP)
+  Detected Local CIDR: 192.168.1.160/24
+  Gateway Check (192.168.1.1): REACHABLE (TCP 80/443)
+  Outbound Egress (1.1.1.1:53): REACHABLE
+===========================================================
+```
+
+---
+
+## Build & Test
 
 ```bash
+# Run all 19 netutils unit tests
 cargo test -p netutils
-```
 
-## Build (quick)
-
-From repository root, build the netutils library in release mode:
-
-```bash
-cargo build --manifest-path crates/netutils/Cargo.toml --lib --release
-```
-
-To build the `netcheck` binary in release mode:
-
-```bash
-cargo build --manifest-path crates/netutils/Cargo.toml --bin netcheck --release
+# Build netcheck in release mode
+cargo build --release --bin netcheck
 ```

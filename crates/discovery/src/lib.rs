@@ -143,12 +143,13 @@ impl Discover for LiveArpDiscover {
                             m[0], m[1], m[2], m[3], m[4], m[5]
                         )
                     });
+                    let vendor = mac_str.as_deref().and_then(io::lookup_vendor_from_oui);
                     DiscoveryRecord::new(
                         &ip.to_string(),
                         None,
                         None,
                         mac_str.as_deref(),
-                        None,
+                        vendor.as_deref(),
                         None,
                     )
                 })
@@ -157,6 +158,11 @@ impl Discover for LiveArpDiscover {
                 .flat_map(|r| {
                     // If portscan disabled, just return the host record
                     if !self.portscan {
+                        return vec![r].into_iter();
+                    }
+
+                    // In passive ARP mode, only portscan hosts present in the ARP cache
+                    if r.mac.is_none() && !self.perform_probe {
                         return vec![r].into_iter();
                     }
 

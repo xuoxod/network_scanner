@@ -1,5 +1,5 @@
 
-# Upload checklist for rmediatech (quick)
+# Upload checklist for network_scanner (quick)
 
 1. Run the full test suite
 

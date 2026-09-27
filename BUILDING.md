@@ -18,9 +18,10 @@ Location: repository root: `BUILDING.md`
 
 ## Quick conventions
 
-- From repo root: use `--manifest-path crates/<crate>/Cargo.toml` to build a
-  specific crate without changing directories.
-- Or `cd crates/<crate>` and run `cargo <cmd>` locally in the crate folder.
+- **Workspace Root**: You can build, test, or run all crates directly from the repository root using standard Cargo commands (`cargo build`, `cargo test --workspace`, `cargo run --bin discovery-cli`).
+- **Per-Crate Commands**: Use `--manifest-path crates/<crate>/Cargo.toml` to build a specific crate without changing directories.
+- **In-Crate Commands**: Or `cd crates/<crate>` and run `cargo <cmd>` locally in the crate folder.
+- **Static Musl**: Run `make musl` or `cargo build --release --target x86_64-unknown-linux-musl` for zero-dependency static binaries.
 
 ## Build examples
 

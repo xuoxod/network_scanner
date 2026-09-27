@@ -29,6 +29,11 @@ Thumbs.db
 # =====================
 *.log
 *.swp
+*.bak
+*.csv
+*.json
+!crates/io/data/oui.csv
+!crates/io/tests/golden/**
 
 # =====================
 # Java / build artifacts (carried from legacy netscan .gitignore)
@@ -50,8 +55,8 @@ hs_err_pid*
 .classpath
 .c9repl_history
 .settings/
-bin/
-tmp/
+/bin/
+/tmp/
 
 # NetBeans
 nbproject/private/
