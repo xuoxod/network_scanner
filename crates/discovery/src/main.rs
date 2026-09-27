@@ -59,10 +59,39 @@ struct Args {
     /// Include all addresses in CIDR range (by default only discovered/active hosts are reported)
     #[arg(long, default_value_t = false)]
     all: bool,
+
+    /// Dynamically update the local IEEE OUI manufacturer database (downloads official registry)
+    #[arg(long, default_value_t = false)]
+    update_oui: bool,
+
+    /// Optional custom URL or local CSV path to update OUI database from
+    #[arg(long, value_name = "URL_OR_FILE")]
+    oui_source: Option<String>,
 }
 
 fn main() {
     let args = Args::parse();
+
+    // 0. Handle dynamic OUI database update if requested
+    if args.update_oui {
+        eprintln!("[discovery-cli] Updating local IEEE OUI manufacturer database...");
+        match io::update_oui_cache(args.oui_source.as_deref()) {
+            Ok((count, path)) => {
+                println!(
+                    "[discovery-cli] Successfully updated OUI database ({} vendor prefixes indexed) -> {}",
+                    count,
+                    path.display()
+                );
+            }
+            Err(e) => {
+                eprintln!("[discovery-cli] Error updating OUI database: {}", e);
+                std::process::exit(1);
+            }
+        }
+        if args.cidr.is_none() {
+            return;
+        }
+    }
 
     // Determine target CIDR: explicit or auto-detected
     let target_cidr = match args.cidr {

@@ -66,25 +66,79 @@ pub fn load_from_str(s: &str) -> HashMap<String, String> {
     m
 }
 
+/// Standard local cache path for updated OUI registry (~/.local/share/network_scanner/oui.csv)
+pub fn default_cache_path() -> Option<std::path::PathBuf> {
+    if let Ok(xdg) = std::env::var("XDG_DATA_HOME") {
+        let p = std::path::PathBuf::from(xdg).join("network_scanner/oui.csv");
+        return Some(p);
+    }
+    if let Ok(home) = std::env::var("HOME") {
+        let p = std::path::PathBuf::from(home).join(".local/share/network_scanner/oui.csv");
+        return Some(p);
+    }
+    None
+}
+
 /// Initialize the default map (lazy).
 fn default_map() -> &'static HashMap<String, String> {
     OUI_MAP.get_or_init(|| {
-        // Try env var override first
+        // 1. Try explicit env var override first
         if let Ok(path) = std::env::var("NETWORK_SCANNER_OUI_PATH") {
             if let Ok(s) = fs::read_to_string(path) {
                 return load_from_str(&s);
             }
         }
-        // Try a workspace-relative path commonly used in this repo (optional)
-        let candidate = Path::new("../../java/netscan/rust_backend/netutils/oui.csv");
-        if candidate.exists() {
-            if let Ok(s) = fs::read_to_string(candidate) {
-                return load_from_str(&s);
+        // 2. Try user-local dynamic cache file if updated
+        if let Some(cache) = default_cache_path() {
+            if cache.exists() {
+                if let Ok(s) = fs::read_to_string(&cache) {
+                    return load_from_str(&s);
+                }
             }
         }
-        // Fallback to the embedded comprehensive CSV shipped with the crate
+        // 3. Fallback to comprehensive embedded IEEE OUI dataset shipped with the crate
         load_from_str(EMBEDDED_OUI_CSV)
     })
+}
+
+/// Update the local OUI cache from an online URL or local path.
+/// Downloads the authoritative registry, validates contents, and writes to local cache.
+pub fn update_oui_cache(source_url_or_path: Option<&str>) -> Result<(usize, std::path::PathBuf), Box<dyn Error>> {
+    let cache_path = default_cache_path().ok_or("Cannot determine user local data directory")?;
+    if let Some(parent) = cache_path.parent() {
+        fs::create_dir_all(parent)?;
+    }
+
+    let src = source_url_or_path.unwrap_or("https://standards-oui.ieee.org/oui/oui.csv");
+
+    let content = if src.starts_with("http://") || src.starts_with("https://") {
+        // Download via curl
+        let output = std::process::Command::new("curl")
+            .arg("-sSfL")
+            .arg("--connect-timeout")
+            .arg("10")
+            .arg(src)
+            .output()
+            .map_err(|e| format!("Failed to execute curl: {}. Please ensure curl is installed or supply a local file path.", e))?;
+        if !output.status.success() {
+            let err = String::from_utf8_lossy(&output.stderr);
+            return Err(format!("Download failed with status {}: {}", output.status, err).into());
+        }
+        String::from_utf8(output.stdout)?
+    } else {
+        // Local file
+        fs::read_to_string(src)?
+    };
+
+    let map = load_from_str(&content);
+    if map.is_empty() {
+        return Err("No valid OUI assignments parsed from downloaded content".into());
+    }
+
+    // Write to cache path
+    fs::write(&cache_path, &content)?;
+
+    Ok((map.len(), cache_path))
 }
 
 /// Initialize the OUI map from an explicit file path. Returns Err on IO errors.

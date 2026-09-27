@@ -16,9 +16,10 @@ High-performance, auditable local network discovery and diagnostic toolkit writt
 
 1. **Passive-First Default**: By default, discovery operates completely passively by inspecting the local kernel ARP table (`/proc/net/arp` and `ip neigh`). Zero unsolicited packets are transmitted onto the wire unless active probes (`--probe`) or port scans (`--portscan`) are explicitly enabled.
 2. **Canonical Data Contracts (`CONTRACTS.md`)**: Output is guaranteed to adhere to machine-readable formats (uniform 6-column CSV, Canonical JSON, Target JSON, and Legacy JSON) across all tools.
-3. **Embedded IEEE OUI Vendor Database**: Hardware MAC addresses are resolved to manufacturer names in memory via an embedded in-tree IEEE OUI table with zero external API calls or network latency.
-4. **Standalone Portability**: Compiles to standalone static-pie binaries via `musl` (`~2.0 MB`) requiring zero runtime dependencies, dynamically linked libraries, or glibc versions.
+3. **Embedded IEEE OUI Database & Dynamic Updates**: Resolves hardware MAC addresses to manufacturer names instantly in memory via an embedded in-tree registry of 32,800+ authoritative IEEE OUI assignments. Includes dynamic cache refresh (`--update-oui`) supporting local user caching (`~/.local/share/network_scanner/oui.csv`) and custom OUI sources (`--oui-source`).
+4. **Standalone Portability**: Compiles to standalone static-pie binaries via `musl` (`~2.9 MB`) requiring zero runtime dependencies, dynamically linked libraries, or glibc versions.
 5. **Non-Privileged Diagnostics**: Includes `netcheck` to inspect local egress, default gateway reachability, and network interface status without requiring elevated privileges.
+6. **Adversarial Self-Attack TDD Invariants**: All network parsers, CSV serialization pipelines, and CIDR sniffers are hardened against adversarial attacks: CSV formula injection (`=`, `+`, `-`, `@`), terminal ANSI escape bombs, CIDR DoS/OOM allocation attacks, and corrupted/malformed ARP cache poisoning.
 
 ---
 
@@ -100,6 +101,18 @@ cargo run --bin discovery-cli -- 192.168.1.0/24 --portscan --ports 22,80,443,800
 sudo -E cargo run --bin discovery-cli -- 192.168.1.0/24 --probe --portscan
 ```
 
+### 4. Dynamic IEEE OUI Database Update
+
+Refresh the local manufacturer database with the latest official IEEE registrations:
+
+```bash
+# Download and cache latest IEEE OUI registry
+cargo run --bin discovery-cli -- --update-oui
+
+# Or update from an alternate custom registry URL or local file
+cargo run --bin discovery-cli -- --update-oui --oui-source https://custom-mirror.local/oui.csv
+```
+
 ---
 
 ## 📖 CLI Reference (`discovery-cli`)
@@ -108,22 +121,24 @@ sudo -E cargo run --bin discovery-cli -- 192.168.1.0/24 --probe --portscan
 Usage: discovery-cli [OPTIONS] [CIDR]
 
 Arguments:
-  [CIDR]  CIDR range to scan (e.g. 192.168.1.0/24). Auto-detects primary CIDR if omitted
+  [CIDR]  CIDR range to scan (e.g. 192.168.1.0/24). If omitted, automatically detects primary interface CIDR
 
 Options:
-      --probe                  Enable active ARP probes (requires elevated privileges)
-      --portscan               Enable TCP port scanning on discovered hosts (off by default)
-      --fast                   Fast port preset: scan top ~100 common ports
-      --ports <PORTS>          Explicit port list or range to scan (e.g. "22,80,443,8000-8080")
-      --concurrency <N>        Number of concurrent worker threads [default: 64]
-      --timeout <SECS>         Per-target / per-port timeout in seconds [default: 1]
-  -o, --out <FILE>             Output CSV file path [default: discovery_results.csv]
-      --json                   Generate companion JSON outputs (.json, .target.json, .legacy.json)
-      --out-target <FILE>      Write target-compatible JSON to specified file
-      --out-legacy <FILE>      Write legacy-shaped JSON to specified file
-      --all                    Include all addresses in CIDR range (default: discovered hosts only)
-  -h, --help                   Print help information
-  -V, --version                Print version information
+      --probe                      Enable active ARP probes (permission required, e.g. sudo)
+      --portscan                   Enable TCP port scanning on discovered hosts (off by default)
+      --fast                       Fast port preset: scan top ~100 common ports
+      --ports <PORTS>              Explicit port list or range to scan (e.g. "22,80,443,8000-8080")
+      --concurrency <CONCURRENCY>  Number of concurrent worker threads [default: 64]
+      --timeout <TIMEOUT>          Per-target / per-port timeout in seconds [default: 1]
+  -o, --out <OUT>                  Output CSV file path [default: discovery_results.csv]
+      --json                       Generate companion JSON outputs (.json, .target.json, .legacy.json)
+      --out-target <FILE>          Write target-compatible JSON to specified file
+      --out-legacy <FILE>          Write legacy-shaped JSON to specified file
+      --all                        Include all addresses in CIDR range (by default only discovered/active hosts are reported)
+      --update-oui                 Dynamically update the local IEEE OUI manufacturer database (downloads official registry)
+      --oui-source <URL_OR_FILE>   Optional custom URL or local CSV path to update OUI database from
+  -h, --help                       Print help
+  -V, --version                    Print version
 ```
 
 ---
@@ -207,13 +222,32 @@ Static binaries are located at:
 
 ---
 
+## 🛡️ Adversarial Security & Invariants
+
+`network_scanner` is engineered for hostile and untrusted network environments. All parser boundaries and data export routines adhere to strict red-team invariants verified by continuous self-attack testing:
+
+| Attack Vector | Threat Model | Sovereign Defense Mechanism |
+| :--- | :--- | :--- |
+| **CSV Formula Injection** | Rogue hostnames or banners returning `=cmd\|' /C ...'!A0` or `@SUM(...)` to execute arbitrary code when opening reports in spreadsheet applications | All string fields starting with `=`, `+`, `-`, `@`, `\t`, or `\r` are neutralized with single-quote prefix escaping (`'`) before CSV serialization. |
+| **Terminal ANSI Bombs** | Malicious network services transmitting escape sequences (`\x1b[2J`, title-setting codes) to hijack the operator's terminal or spoof logs | Service banners are scrubbed: all ANSI CSI sequences are stripped, control characters sanitized, and output bounded to safe lengths. |
+| **CIDR DoS / OOM Exhaustion** | Target CIDRs larger than `/16` (e.g. `/8` or `/0`) causing millions of host allocations, freezing system memory | The CIDR sniffer strictly rejects prefixes `< /16` with an error, preventing memory exhaustion. RFC 3021 `/31` point-to-point and `/32` single-host boundaries are safely handled. |
+| **Kernel ARP Cache Poisoning** | Spoofed, non-hex, or corrupted MAC entries in `/proc/net/arp` or `ip neigh` poisoning downstream analytics | Strict bitwise hex parsing validates every hardware address format (`AA:BB:CC:DD:EE:FF` or `AA-BB-CC-DD-EE-FF`) before accepting into records. |
+| **OUI Resolution Precedence** | Dynamic cache overrides or offline air-gapped environments | Deterministic 3-tier precedence: `NETWORK_SCANNER_OUI_PATH` env var $\to$ local user XDG cache (`~/.local/share/network_scanner/oui.csv`) $\to$ embedded authoritative 32,800+ IEEE dataset. |
+
+---
+
 ## 🧪 Testing & Verification
 
-The suite includes comprehensive unit tests, golden file verifiers, and simulated ARP fixtures:
+The suite includes comprehensive unit tests, golden file verifiers, simulated ARP fixtures, and red-team adversarial self-attack suites:
 
 ```bash
-# Run full test suite across all 5 crates
+# Run full test suite across all 5 crates (53 tests)
 cargo test --workspace
+
+# Run adversarial self-attack test suites
+cargo test --test adversarial_attack_tests
+cargo test --test adversarial_netutils_tests
+cargo test --test adversarial_discovery_tests
 
 # Run integration tests specifically
 cargo test --test portscan_integration

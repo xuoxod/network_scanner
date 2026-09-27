@@ -6,7 +6,11 @@ use std::io::Read;
 
 use formats::DiscoveryRecord;
 mod oui;
+pub use oui::default_cache_path;
+pub use oui::load_from_str;
+pub use oui::lookup_vendor;
 pub use oui::lookup_vendor as lookup_vendor_from_oui;
+pub use oui::update_oui_cache;
 
 /// Read a netscan-style JSON file and map to canonical DiscoveryRecord list.
 pub fn read_netscan_json<P: AsRef<str>>(path: P) -> Result<Vec<DiscoveryRecord>, Box<dyn Error>> {
@@ -274,6 +278,23 @@ pub fn read_netscan_csv<P: AsRef<str>>(path: P) -> Result<Vec<DiscoveryRecord>, 
     Ok(out)
 }
 
+/// Sanitize CSV fields against formula injection / DDE attacks.
+/// If a field starts with '=', '+', '-', '@', tab, or carriage return, it is prepended with a single quote.
+pub fn sanitize_csv_field(s: &str) -> String {
+    let trimmed = s.trim();
+    if trimmed.starts_with('=')
+        || trimmed.starts_with('+')
+        || trimmed.starts_with('-')
+        || trimmed.starts_with('@')
+        || trimmed.starts_with('\t')
+        || trimmed.starts_with('\r')
+    {
+        format!("'{}", trimmed)
+    } else {
+        trimmed.to_string()
+    }
+}
+
 /// Write canonical discovery records to a CSV formatted string.
 /// Always produces the uniform 6-column header: ip,port,banner,mac,vendor,timestamp
 pub fn to_canonical_csv(records: &[DiscoveryRecord]) -> Result<String, Box<dyn Error>> {
@@ -282,12 +303,15 @@ pub fn to_canonical_csv(records: &[DiscoveryRecord]) -> Result<String, Box<dyn E
     wtr.write_record(&["ip", "port", "banner", "mac", "vendor", "timestamp"])?;
     for r in records {
         let port_str = r.port.map(|p| p.to_string()).unwrap_or_default();
+        let ip_clean = sanitize_csv_field(&r.ip);
+        let banner_clean = sanitize_csv_field(r.banner.as_deref().unwrap_or(""));
+        let vendor_clean = sanitize_csv_field(r.vendor.as_deref().unwrap_or(""));
         wtr.write_record(&[
-            &r.ip,
+            &ip_clean,
             &port_str,
-            r.banner.as_deref().unwrap_or(""),
+            &banner_clean,
             r.mac.as_deref().unwrap_or(""),
-            r.vendor.as_deref().unwrap_or(""),
+            &vendor_clean,
             r.timestamp.as_deref().unwrap_or(""),
         ])?;
     }

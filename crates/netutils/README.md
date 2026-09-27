@@ -47,6 +47,9 @@ Example output:
 # Run all 19 netutils unit tests
 cargo test -p netutils
 
+# Run adversarial self-attack tests (ANSI bomb defense, CIDR DoS guardrails, ARP corruption)
+cargo test -p netutils --test adversarial_netutils_tests
+
 # Build netcheck in release mode
 cargo build --release --bin netcheck
 ```

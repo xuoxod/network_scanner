@@ -15,7 +15,7 @@ Core discovery engine and CLI for local network observation, ARP inspection, and
 2. **Opt-in active ARP probing (`--probe`)**: Transmits unicast ARP requests to detect live hosts absent from local cache.
 3. **Opt-in TCP port scanning (`--portscan`)**: Connect-scans discovered hosts. Built-in port range defaults to `1..=1024`, with `--fast` offering a ~100 port preset, or `--ports` accepting custom lists and ranges.
 4. **Automatic Primary CIDR Discovery**: If no CIDR is specified, the CLI interrogates the system interface table to determine the primary subnet automatically.
-5. **Hardware OUI Resolution**: Discovered MAC addresses are automatically enriched with hardware manufacturer names from the embedded IEEE OUI database.
+5. **Hardware OUI Resolution & Dynamic Updates**: Discovered MAC addresses are automatically enriched with hardware manufacturer names from the 32,800+ embedded IEEE OUI database, with `--update-oui` allowing dynamic updates to the local cache.
 
 ---
 
@@ -33,6 +33,9 @@ cargo run --bin discovery-cli -- 192.168.1.0/24 --portscan --fast
 
 # Explicit port list and custom timeouts
 cargo run --bin discovery-cli -- 192.168.1.0/24 --portscan --ports 22,80,443,8000-8080 --timeout 2
+
+# Dynamically update the local IEEE OUI manufacturer registry
+cargo run --bin discovery-cli -- --update-oui
 
 # Active ARP probing (requires elevated privileges)
 sudo -E cargo run --bin discovery-cli -- 192.168.1.0/24 --probe --portscan
@@ -83,4 +86,7 @@ cargo test -p discovery --test portscan_integration
 
 # CLI companion file test
 cargo test -p discovery --test cli_companion_test
+
+# Adversarial self-attack test
+cargo test -p discovery --test adversarial_discovery_tests
 ```

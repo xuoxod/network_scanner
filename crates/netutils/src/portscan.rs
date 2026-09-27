@@ -46,7 +46,7 @@ pub async fn scan_tcp_async(
                     let mut buf = vec![0u8; 512];
                     let read_res = tokio::time::timeout(Duration::from_millis(300), stream.read(&mut buf)).await;
                     let banner = match read_res {
-                        Ok(Ok(n)) if n > 0 => Some(String::from_utf8_lossy(&buf[..n]).trim().to_string()),
+                        Ok(Ok(n)) if n > 0 => Some(normalize_banner(&String::from_utf8_lossy(&buf[..n]))),
                         _ => None,
                     };
                     // Attempt to close gracefully
@@ -79,14 +79,28 @@ pub fn scan_tcp(
     rt.block_on(scan_tcp_async(ips, port, timeout, concurrency))
 }
 
-/// Normalize a banner string: trim, keep printable ascii, collapse whitespace, limit length.
+/// Normalize a banner string: strip ANSI escapes, trim, keep printable ascii, collapse whitespace, limit length.
 pub fn normalize_banner(s: &str) -> String {
-    let trimmed = s.trim();
-    let filtered: String = trimmed
-        .chars()
-        .filter(|c| c.is_ascii() && !c.is_control())
-        .collect();
-    let collapsed = filtered.split_whitespace().collect::<Vec<_>>().join(" ");
+    let mut out = String::with_capacity(s.len());
+    let mut in_escape = false;
+    for c in s.chars() {
+        if c == '\x1b' {
+            in_escape = true;
+            continue;
+        }
+        if in_escape {
+            if c.is_ascii_alphabetic() {
+                in_escape = false;
+            }
+            continue;
+        }
+        if c == '\t' || c == '\n' || c == '\r' {
+            out.push(' ');
+        } else if c.is_ascii() && !c.is_control() {
+            out.push(c);
+        }
+    }
+    let collapsed = out.split_whitespace().collect::<Vec<_>>().join(" ");
     if collapsed.len() > 200 {
         collapsed[..200].to_string()
     } else {

@@ -10,19 +10,21 @@ fn hosts_from_network(net: Ipv4Network) -> Vec<Ipv4Addr> {
     let prefix = net.prefix();
     let octets = net.ip().octets();
     let base = u32::from_be_bytes(octets);
-    let host_count = if prefix == 32 {
-        1u32
-    } else {
-        1u32.wrapping_shl(32 - prefix as u32)
-    };
-    let mut hosts = Vec::new();
-    if host_count == 1 {
-        hosts.push(net.ip());
-        return hosts;
+    if prefix == 32 {
+        return vec![net.ip()];
     }
-    // iterate over addresses excluding network (base) and broadcast (base + host_count -1)
+    if prefix == 31 {
+        // RFC 3021: Point-to-point links (both base and base + 1 are usable)
+        return vec![Ipv4Addr::from(base), Ipv4Addr::from(base + 1)];
+    }
+    let host_count = 1u32.wrapping_shl(32 - prefix as u32);
+    if host_count <= 2 {
+        return vec![net.ip()];
+    }
+    // iterate over addresses excluding network (base) and broadcast (base + host_count - 1)
     let first = base + 1;
     let last = base + host_count - 2; // inclusive
+    let mut hosts = Vec::with_capacity((last - first + 1) as usize);
     for addr in first..=last {
         hosts.push(Ipv4Addr::from(addr));
     }
@@ -42,6 +44,12 @@ pub fn scan_cidr(
     timeout: Duration,
 ) -> Result<Vec<(Ipv4Addr, Option<[u8; 6]>)>, String> {
     let net: Ipv4Network = cidr.parse().map_err(|e| format!("invalid cidr: {}", e))?;
+    if net.prefix() < 16 {
+        return Err(format!(
+            "CIDR /{} exceeds maximum supported size (maximum is /16 for safe memory allocation)",
+            net.prefix()
+        ));
+    }
     let hosts = hosts_from_network(net);
     if hosts.is_empty() {
         return Ok(Vec::new());

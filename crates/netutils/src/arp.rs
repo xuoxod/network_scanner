@@ -29,9 +29,11 @@ pub fn parse_proc_net_arp(content: &str) -> Vec<(Ipv4Addr, String, String)> {
         let parts: Vec<&str> = line.split_whitespace().collect();
         if parts.len() >= 6 {
             if let Ok(ip) = parts[0].parse::<Ipv4Addr>() {
-                let mac = parts[3].to_string();
-                let dev = parts[5].to_string();
-                out.push((ip, mac, dev));
+                if parse_mac(parts[3]).is_some() {
+                    let mac = parts[3].to_string();
+                    let dev = parts[5].to_string();
+                    out.push((ip, mac, dev));
+                }
             }
         }
     }
@@ -62,7 +64,7 @@ pub fn parse_ip_neigh(output: &str) -> Vec<(Ipv4Addr, String, String)> {
                         dev = parts[i + 1].to_string();
                     }
                 }
-                if !mac.is_empty() {
+                if !mac.is_empty() && parse_mac(&mac).is_some() {
                     out.push((ip, mac, dev));
                 }
             }
